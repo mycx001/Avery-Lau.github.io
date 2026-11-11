@@ -3,41 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Linux 云服务器生产环境安全加固与基础排障清单 - Avery's Tech Notes</title>
+    <title>Linux 小白入门避坑指南与生产环境运维速查手册 - Avery's Tech Notes</title>
     <style>
-        :root { --primary: #0969da; --bg: #f6f8fa; --card: #ffffff; --text: #24292f; --border: #d0d7de; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.65; margin: 0; padding: 30px 15px; }
-        .container { max-width: 820px; margin: 0 auto; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 35px 40px; }
-        .back-link { display: inline-block; margin-bottom: 20px; color: var(--primary); text-decoration: none; font-size: 0.9rem; font-weight: 500; }
-        h1 { font-size: 1.7rem; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-top: 0; }
-        h2 { font-size: 1.3rem; margin-top: 30px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
-        pre { background: #24292e; color: #f6f8fa; padding: 15px; border-radius: 6px; overflow-x: auto; font-size: 0.88rem; }
+        :root { --primary: #0969da; --bg: #f6f8fa; --card: #ffffff; --text: #24292f; --border: #d0d7de; --code-bg: #f6f8fa; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; margin: 0; padding: 30px 15px; }
+        .container { max-width: 860px; margin: 0 auto; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 40px; }
+        .back-link { display: inline-block; margin-bottom: 20px; color: var(--primary); text-decoration: none; font-size: 0.95rem; font-weight: 500; }
+        h1 { font-size: 1.8rem; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-top: 0; }
+        h2 { font-size: 1.35rem; margin-top: 35px; border-bottom: 1px solid var(--border); padding-bottom: 8px; color: #1f2328; }
+        h3 { font-size: 1.1rem; margin-top: 25px; color: #24292f; }
+        pre { background: #24292e; color: #f6f8fa; padding: 16px; border-radius: 6px; overflow-x: auto; font-size: 0.9rem; line-height: 1.5; }
+        code { background: var(--code-bg); color: #cf222e; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.9rem; border: 1px solid #e1e4e8; }
+        pre code { background: transparent; color: inherit; border: none; padding: 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.92rem; }
+        th, td { border: 1px solid var(--border); padding: 10px 14px; text-align: left; }
+        th { background: #f6f8fa; font-weight: 600; }
+        .tip { background: #ddf4ff; border-left: 4px solid var(--primary); padding: 15px; margin: 20px 0; border-radius: 0 6px 6px 0; }
+        .warn { background: #fff8c5; border-left: 4px solid #9a6700; padding: 15px; margin: 20px 0; border-radius: 0 6px 6px 0; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <a href="index.html" class="back-link">← 返回博客首页</a>
-    <h1>Linux 云服务器生产环境安全加固与基础排障清单</h1>
-    <p><em>作者: Avery | 分类: Linux 运维 | 日期: 2026-10</em></p>
+    <h1>Linux 小白入门避坑指南与生产环境运维速查手册</h1>
+    <p><em>作者: Avery | 分类: Linux 零基础教程 | 最后更新: 2026-11</em></p>
 
-    <h2>一、 开启 Google BBR 内核网络加速</h2>
-    <p>通过优化 TCP 拥塞控制算法显著提升网络吞吐：</p>
-    <pre><code>echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf
+    <div class="tip">
+        <strong>写在前面：</strong> 刚买完海外 VPS 的很多新手朋友面对黑乎乎的终端窗口往往无从下手。本文从最基础的连接工具、文件操作、权限机制到日常排错，梳理一份真正通俗易懂的实战笔记，拒绝晦涩难懂的理论。
+    </div>
+
+    <h2>一、 远程连接与基础交互认知</h2>
+    <p>云服务器本质上是一台没有显示器的远程电脑，你只能通过 <strong>SSH（Secure Shell）</strong> 协议在本地终端操作它。</p>
+    <ul>
+        <li><strong>Windows 推荐连接工具：</strong> Windows 10/11 自带 PowerShell、Tabby、FinalShell、MobaXterm。</li>
+        <li><strong>Mac / Linux：</strong> 直接打开自带的“终端（Terminal）”即可。</li>
+    </ul>
+
+    <h3>1. 最基础的 SSH 登录命令</h3>
+    <pre><code># 语法：ssh 用户名@服务器公网IP -p 端口 (默认端口22)
+ssh root@192.0.2.1
+
+# 如果主机商分配了非标准端口（如 28888）：
+ssh root@192.0.2.1 -p 28888</code></pre>
+
+    <div class="warn">
+        <strong>⚠️ 避坑提醒：</strong> 在终端输入密码时，屏幕上<strong>不会显示任何星号或占位符</strong>（这是 Linux 的密码隐身保护机制），直接敲完密码敲回车，或者在终端右键粘贴即可。
+    </div>
+
+    <h2>二、 必须牢记的日常高频核心命令</h2>
+
+    <h3>1. 目录穿梭与文件管理</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>命令</th>
+                <th>作用说明</th>
+                <th>实际使用示例</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>pwd</code></td>
+                <td>Print Working Directory：显示当前所处的绝对路径</td>
+                <td><code>pwd</code></td>
+            </tr>
+            <tr>
+                <td><code>ls -lh</code></td>
+                <td>列出当前目录下的文件，并以友好格式（MB/GB）显示大小</td>
+                <td><code>ls -lh /var/log</code></td>
+            </tr>
+            <tr>
+                <td><code>cd</code></td>
+                <td>切换目录（Change Directory）</td>
+                <td><code>cd /etc/nginx</code>（回根目录：<code>cd /</code>，回用户家目录：<code>cd ~</code>）</td>
+            </tr>
+            <tr>
+                <td><code>mkdir -p</code></td>
+                <td>创建文件夹（<code>-p</code> 允许递归创建多层目录）</td>
+                <td><code>mkdir -p /data/docker/myproject</code></td>
+            </tr>
+            <tr>
+                <td><code>cp -r</code></td>
+                <td>复制文件或整个文件夹</td>
+                <td><code>cp -r source/ backup/</code></td>
+            </tr>
+            <tr>
+                <td><code>mv</code></td>
+                <td>移动文件，或者给文件重命名</td>
+                <td><code>mv old.conf new.conf</code></td>
+            </tr>
+            <tr>
+                <td><code>rm -rf</code></td>
+                <td><strong>危险命令：</strong>强制删除文件或非空文件夹</td>
+                <td><code>rm -rf /tmp/cache/</code>（千万别在根目录乱敲）</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>2. 查看文件内容（拒绝打开大文件卡死）</h3>
+    <pre><code># 查看小型配置文件全部内容
+cat /etc/issue
+
+# 动态实时监控日志更新（运维抓 Bug 最常用命令）
+tail -f -n 100 /var/log/nginx/access.log
+
+# 分页浏览大型文件（按 Q 退出）
+less /var/log/syslog</code></pre>
+
+    <h2>三、 Linux 用户权限与 <code>chmod / chown</code> 揭秘</h2>
+    <p>很多小白经常遇到 <code>Permission denied</code>（权限拒绝）错误，这是因为 Linux 拥有极其严格的权限隔离模型：</p>
+    <ul>
+        <li><strong>用户角色：</strong> 所有者（User/u）、所属用户组（Group/g）、其他所有人（Others/o）。</li>
+        <li><strong>权限数字含义：</strong> 读取(r)=4，写入(w)=2，执行(x)=1。相加即为对应权限数字：
+            <ul>
+                <li><code>chmod 755 filename</code>：所有者拥有全部读写执行权限（4+2+1=7），其他人只能读取和执行（4+1=5）。</li>
+                <li><code>chmod 600 id_rsa</code>：仅所有者拥有读写权限（私钥文件的标准权限）。</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h2>四、 服务器资源排障“三板斧”</h2>
+    <p>当你的网站打不开、或者感觉服务器变慢时，按顺序敲以下三组命令，99% 的问题一目了然：</p>
+
+    <h3>1. 第一斧：查 CPU 与内存死锁（看 htop / free）</h3>
+    <pre><code># 检查内存与 Swap 占用情况（-m 表示按 MB 显示）
+free -m
+# 如果 available（可用内存）只剩几十兆，说明程序即将发生 OOM 内存溢出。
+
+# 动态任务管理器，查看是哪个进程在疯狂占用 CPU
+htop
+# 按 F9 可以终止进程，按 F10 退出。</code></pre>
+
+    <h3>2. 第二斧：查磁盘是否被日志撑爆（df -h）</h3>
+    <pre><code># 检查各磁盘分区空间
+df -h
+# 重点看挂载点为 "/" 的分区 Use% 是否达到 100%。如果满了，系统将无法创建临时文件导致崩溃。</code></pre>
+
+    <h3>3. 第三斧：查网络端口到底开没开（ss / netstat）</h3>
+    <pre><code># 查看当前机器正在监听的服务和端口
+ss -tulpn
+# 检查你启动的服务（例如 80、443、21116）是否显示在 LISTEN 状态下。</code></pre>
+
+    <h2>五、 基础防火墙与网络调优</h2>
+    <pre><code># Ubuntu / Debian 常用防火墙 UFW 快速管理
+ufw allow 22/tcp    # 必须先放行 SSH，否则会被关在门外！
+ufw allow 80/tcp    # 放行 HTTP
+ufw allow 443/tcp   # 放行 HTTPS
+ufw enable          # 启动防火墙
+ufw status          # 查看规则清单
+
+# 开启 TCP BBR 加速提升网络传输稳定性
+echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf
 echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
 sysctl -p</code></pre>
 
-    <h2>二、 日常性能与网络状态快速排查</h2>
-    <pre><code># 1. 查看内存占用
-free -h
-
-# 2. 检查磁盘根分区剩余空间
-df -h
-
-# 3. 查看当前系统网络端口监听详情
-ss -tulnp</code></pre>
-
-    <p style="margin-top: 35px;"><a href="index.html" class="back-link">← 返回博客首页</a></p>
+    <p style="margin-top: 40px;"><a href="index.html" class="back-link">← 返回博客首页</a></p>
 </div>
 
 </body>
