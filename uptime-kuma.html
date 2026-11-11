@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基于 Docker 搭建私有 Uptime Kuma 运维监控面板与多渠道告警实战 - Avery's Tech Notes</title>
+    <style>
+        :root { --primary: #0969da; --bg: #f6f8fa; --card: #ffffff; --text: #24292f; --border: #d0d7de; --code-bg: #f6f8fa; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; margin: 0; padding: 30px 15px; }
+        .container { max-width: 860px; margin: 0 auto; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 40px; }
+        .back-link { display: inline-block; margin-bottom: 20px; color: var(--primary); text-decoration: none; font-size: 0.95rem; font-weight: 500; }
+        h1 { font-size: 1.8rem; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-top: 0; }
+        h2 { font-size: 1.35rem; margin-top: 35px; border-bottom: 1px solid var(--border); padding-bottom: 8px; color: #1f2328; }
+        h3 { font-size: 1.1rem; margin-top: 25px; color: #24292f; }
+        pre { background: #24292e; color: #f6f8fa; padding: 16px; border-radius: 6px; overflow-x: auto; font-size: 0.9rem; line-height: 1.5; }
+        code { background: var(--code-bg); color: #cf222e; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.9rem; border: 1px solid #e1e4e8; }
+        pre code { background: transparent; color: inherit; border: none; padding: 0; }
+        .tip { background: #ddf4ff; border-left: 4px solid var(--primary); padding: 15px; margin: 20px 0; border-radius: 0 6px 6px 0; }
+        .aff-card { background: linear-gradient(135deg, #f0f7ff 0%, #e1effe 100%); border: 1px solid #b9d7fb; border-radius: 8px; padding: 20px; margin: 25px 0; }
+        .btn-aff { display: inline-block; background: #2da44e; color: #ffffff !important; padding: 9px 18px; border-radius: 6px; text-decoration: none; font-weight: 600; margin-top: 10px; font-size: 0.92rem; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <a href="index.html" class="back-link">← 返回博客首页</a>
+    <h1>基于 Docker 快速搭建私有 Uptime Kuma 运维监控面板与多渠道告警实战</h1>
+    <p><em>作者: Avery | 分类: 云原生与自托管 | 最后更新: 2026-11</em></p>
+
+    <p>在运维多台云服务器、自建中转或托管个人博客时，业务服务何时故障宕机、网络何时发生大面积丢包，运维人员必须能在第一时间获知。开源界备受好评的 <strong>Uptime Kuma</strong> 提供了不输商业级产品（如 UptimeRobot）的监控能力，且完全免费、数据自持、原生支持精美的公开状态页与多渠道自动告警。</p>
+
+    <h2>一、 架构需求与基础设施选型</h2>
+    <p>Uptime Kuma 占用资源极小（512MB 内存即可轻量跑起），支持 HTTP(s)、TCP 端口、Ping、DNS 记录、SSL 证书有效天数以及 Docker 容器健康度等多种探针检测。</p>
+
+    <div class="aff-card">
+        <h3 style="margin-top: 0; color: #0969da;">💡 为什么“监控服务器自身”必须极度稳定？</h3>
+        <p>监控节点的职责是充当守门人。如果监控机自身的硬件频繁被超售抢占、宿主机网络经常抖动丢包，系统就会产生大量假警报，失去监控的实际意义。因此，用于部署监控守护进程的 VPS 必须具备极高在线率（SLA）以及优秀的公网连通性。</p>
+        <p><strong>实操建议：</strong> 个人监控常驻机推荐选用 <strong>BandwagonHost（搬瓦工）</strong> 洛杉矶 CN2 GIA-E 或荷兰机房方案。其基于企业级 KVM 虚拟化，硬件稳定性极佳，99.9% 以上的实机在线率能确保 24 小时监控任务不间断稳定轮询。</p>
+        <a href="https://bwh81.net/aff.php?aff=82984" target="_blank" rel="noopener" class="btn-aff">👉 查看 BandwagonHost 稳定型服务器方案详情</a>
+    </div>
+
+    <h2>二、 使用 Docker Compose 快速部署 Uptime Kuma</h2>
+
+    <h3>1. 准备配置目录并编写 Compose 文件</h3>
+    <pre><code># 创建挂载与持久化目录
+mkdir -p /opt/uptime-kuma && cd /opt/uptime-kuma
+
+# 编写 docker-compose.yml
+cat > docker-compose.yml &lt;&lt; 'EOF'
+version: '3.8'
+
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: uptime-kuma
+    restart: always
+    volumes:
+      - ./data:/app/data
+    ports:
+      - "3001:3001"
+EOF</code></pre>
+
+    <h3>2. 启动容器服务与防火墙放行</h3>
+    <pre><code># 后台拉取镜像并启动
+docker compose up -d
+
+# 检查容器运行状态 (看到 Up 状态即正常)
+docker ps | grep uptime-kuma
+
+# 放行 Uptime Kuma 面板默认端口 (若使用反向代理则仅需放行 80/443)
+ufw allow 3001/tcp</code></pre>
+
+    <h2>三、 初始化管理员账户与配置首个监控项</h2>
+    <ol>
+        <li>在浏览器访问 <code>http://你的服务器IP:3001</code>。</li>
+        <li>初次进入时，按提示设置<strong>管理员用户名和密码</strong>。</li>
+        <li>点击左上角的 <strong>“添加新监控项（Add New Monitor）”</strong>：
+            <ul>
+                <li><strong>监控类型（Monitor Type）：</strong> 常用包括 <code>HTTP(s)</code>（用于监控网站或API）、<code>TCP Port</code>（监控SSH或特定服务端口）、<code>Ping</code>（监控主机连通性）。</li>
+                <li><strong>易记名称（Friendly Name）：</strong> 例如 <code>核心API生产节点</code> 或 <code>香港业务中转机</code>。</li>
+                <li><strong>心跳间隔（Heartbeat Interval）：</strong> 推荐设置为 <code>60 秒</code>（轮询过于频繁容易给被监测端造成网络压力）。</li>
+            </ul>
+        </li>
+        <li>点击保存，等待第一次检测变绿（状态显示为 <strong>Up</strong>）。</li>
+    </ol>
+
+    <h2>四、 配置 Telegram / 邮件 / Webhook 故障自动告警</h2>
+    <p>Uptime Kuma 原生集成了数十种通知渠道。以最常用的 <strong>Telegram Bot</strong> 告警为例：</p>
+    <pre><code># 告警配置流程：
+1. 在面板右上角点击 "设置 (Settings)" -> "告警通知 (Notifications)"。
+2. 点击 "设置告警 (Setup Notification)"，选择 "Telegram"。
+3. 填入你的 Telegram Bot Token 和接收消息的 Chat ID。
+4. 点击 "测试 (Test)"，若手机收到测试消息，勾选 "默认启用"，点击保存。</code></pre>
+
+    <div class="tip">
+        <strong>进阶技巧：</strong> 可以在面板顶部点击 <strong>“状态页面（Status Pages）”</strong>，一键定制专属的公开服务健康看板（支持自定义域名与 Logo），供团队成员或客户随时查看基础设施实时在线情况。
+    </div>
+
+    <p style="margin-top: 40px;"><a href="index.html" class="back-link">← 返回博客首页</a></p>
+</div>
+
+</body>
+</html>
