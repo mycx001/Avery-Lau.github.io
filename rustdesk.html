@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基于 Docker 快速搭建私有 RustDesk 远程桌面中转服务器 - Avery's Tech Notes</title>
+    <style>
+        :root { --primary: #0969da; --bg: #f6f8fa; --card: #ffffff; --text: #24292f; --border: #d0d7de; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.65; margin: 0; padding: 30px 15px; }
+        .container { max-width: 820px; margin: 0 auto; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 35px 40px; }
+        .back-link { display: inline-block; margin-bottom: 20px; color: var(--primary); text-decoration: none; font-size: 0.9rem; font-weight: 500; }
+        h1 { font-size: 1.7rem; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-top: 0; }
+        h2 { font-size: 1.3rem; margin-top: 30px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+        pre { background: #24292e; color: #f6f8fa; padding: 15px; border-radius: 6px; overflow-x: auto; font-size: 0.88rem; }
+        .callout { background: #f0f7ff; border-left: 4px solid var(--primary); padding: 15px 18px; margin: 20px 0; border-radius: 0 6px 6px 0; }
+        .btn-aff { display: inline-block; background: #2da44e; color: #fff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 600; margin-top: 8px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <a href="index.html" class="back-link">← 返回博客首页</a>
+    <h1>基于 Docker 快速搭建私有 RustDesk 远程桌面中转服务器</h1>
+    <p><em>作者: Avery | 分类: 自建服务 | 日期: 2026-11</em></p>
+
+    <div class="callout">
+        <strong>💡 为什么需要自建中转？</strong><br>
+        RustDesk 官方公共中转服务器由全球志愿者维护，高峰期时常出现连接排队或延迟飙升。自建专属中转（Relay Server）能彻底告别卡顿，实现 60 帧无延迟远程控制。
+    </div>
+
+    <h2>一、 服务器配置与网络要求</h2>
+    <p>自建中转对服务器 CPU/内存要求极低（1核1G足够），但对<strong>网络延迟与丢包率</strong>有极高要求。建议优先选购具有优质回国路由（如双向 CN2 GIA / 软银）的机房实例。</p>
+    
+    <div style="background: #f6f8fa; border: 1px solid var(--border); padding: 15px; border-radius: 6px; margin: 15px 0;">
+        <p style="margin: 0 0 8px 0;"><strong>测试主力机型：</strong> 搬瓦工（BandwagonHost）洛杉矶 CN2 GIA-E 节点，三网丢包率常年 &lt; 0.5%，延迟极稳。</p>
+        <a href="https://bwh81.net/aff.php?aff=82984" target="_blank" class="btn-aff">查看 BandwagonHost 推荐机型详情</a>
+    </div>
+
+    <h2>二、 使用 Docker Compose 部署服务</h2>
+    <p>创建 <code>docker-compose.yml</code> 文件：</p>
+    <pre><code>version: '3'
+services:
+  hbbs:
+    container_name: rustdesk-hbbs
+    image: rustdesk/rustdesk-server:latest
+    command: hbbs -r 你的公网IP:21117
+    volumes:
+      - ./data:/root
+    ports:
+      - 21115:21115
+      - 21116:21116
+      - 21116:21116/udp
+      - 21118:21118
+    restart: unless-stopped
+
+  hbbr:
+    container_name: rustdesk-hbbr
+    image: rustdesk/rustdesk-server:latest
+    command: hbbr
+    volumes:
+      - ./data:/root
+    ports:
+      - 21117:21117
+      - 21119:21119
+    restart: unless-stopped</code></pre>
+
+    <h2>三、 防火墙端口放行与公钥配置</h2>
+    <pre><code># 防火墙需放行 TCP(21115-21119) 与 UDP(21116)
+ufw allow 21115:21119/tcp
+ufw allow 21116/udp
+
+# 查看服务端加密公钥 (客户端填入 Key 项)
+cat ./data/id_ed25519.pub</code></pre>
+
+    <p style="margin-top: 35px;"><a href="index.html" class="back-link">← 返回博客首页</a></p>
+</div>
+
+</body>
+</html>
