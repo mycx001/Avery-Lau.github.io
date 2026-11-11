@@ -3,319 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avery's Tech Notes - 云主机运维与 DevOps 实战手册</title>
+    <title>Avery's Tech Blog - 云原生与运维实战记录</title>
     <style>
-        :root {
-            --primary: #0969da;
-            --bg: #f6f8fa;
-            --card-bg: #ffffff;
-            --text: #24292f;
-            --muted: #57606a;
-            --border: #d0d7de;
-            --code-bg: #f6f8fa;
-            --tag-bg: #ddf4ff;
-            --tag-text: #0969da;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
-            line-height: 1.65;
-            color: var(--text);
-            background-color: var(--bg);
-            margin: 0;
-            padding: 20px 10px;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 30px 40px;
-            box-shadow: 0 3px 12px rgba(140,149,159,0.1);
-        }
-        /* 导航栏 */
-        .nav-bar {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            padding-bottom: 20px;
-            margin-bottom: 25px;
-            border-bottom: 1px solid var(--border);
-        }
-        .nav-bar a {
-            color: var(--muted);
-            text-decoration: none;
-            font-size: 0.95rem;
-            font-weight: 500;
-        }
-        .nav-bar a:hover {
-            color: var(--primary);
-        }
-        h1 {
-            font-size: 1.85rem;
-            color: #1f2328;
-            margin-top: 0;
-        }
-        h2 {
-            font-size: 1.35rem;
-            margin-top: 40px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid var(--border);
-            color: #1f2328;
-        }
-        h3 {
-            font-size: 1.1rem;
-            margin-top: 25px;
-            color: #24292f;
-        }
-        .meta {
-            font-size: 0.85rem;
-            color: var(--muted);
-            margin-bottom: 25px;
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .badge {
-            background: var(--tag-bg);
-            color: var(--tag-text);
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-weight: 500;
-        }
-        code {
-            background-color: var(--code-bg);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
-            font-size: 0.88rem;
-            color: #cf222e;
-            border: 1px solid #e1e4e8;
-        }
-        pre {
-            background-color: #24292e;
-            color: #f6f8fa;
-            padding: 16px;
-            border-radius: 6px;
-            overflow-x: auto;
-            font-size: 0.88rem;
-            line-height: 1.45;
-        }
-        pre code {
-            background-color: transparent;
-            color: inherit;
-            padding: 0;
-            border: none;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            font-size: 0.9rem;
-        }
-        th, td {
-            border: 1px solid var(--border);
-            padding: 10px 14px;
-            text-align: left;
-        }
-        th {
-            background-color: #f6f8fa;
-            font-weight: 600;
-        }
-        .info-card {
-            background-color: #f6f8fa;
-            border: 1px solid var(--border);
-            border-left: 4px solid var(--primary);
-            padding: 18px 20px;
-            margin: 20px 0;
-            border-radius: 0 6px 6px 0;
-        }
-        .recommend-box {
-            background: linear-gradient(135deg, #f0f7ff 0%, #e8f3ff 100%);
-            border: 1px solid #bfdbfe;
-            border-radius: 8px;
-            padding: 20px 24px;
-            margin: 25px 0;
-        }
-        .btn-link {
-            display: inline-block;
-            background-color: #2da44e;
-            color: #ffffff !important;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-weight: 600;
-            text-decoration: none;
-            margin-top: 10px;
-            font-size: 0.9rem;
-        }
-        .btn-link:hover {
-            background-color: #2c974b;
-        }
-        footer {
-            margin-top: 50px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border);
-            font-size: 0.82rem;
-            color: var(--muted);
-            text-align: center;
-        }
+        :root { --primary: #0969da; --bg: #f6f8fa; --card: #ffffff; --text: #24292f; --muted: #57606a; --border: #d0d7de; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 30px 15px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        header { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 25px 30px; margin-bottom: 25px; }
+        header h1 { margin: 0 0 8px 0; font-size: 1.6rem; color: #1f2328; }
+        header p { margin: 0; color: var(--muted); font-size: 0.95rem; }
+        .post-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px 25px; margin-bottom: 18px; transition: border-color 0.2s, box-shadow 0.2s; }
+        .post-card:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(140,149,159,0.12); }
+        .post-title { font-size: 1.25rem; margin: 0 0 10px 0; }
+        .post-title a { color: var(--primary); text-decoration: none; font-weight: 600; }
+        .post-title a:hover { text-decoration: underline; }
+        .post-meta { font-size: 0.82rem; color: var(--muted); margin-bottom: 10px; display: flex; gap: 12px; }
+        .post-desc { font-size: 0.92rem; color: #424a53; line-height: 1.55; margin: 0; }
+        .tag { background: #ddf4ff; color: #0969da; padding: 2px 7px; border-radius: 10px; font-size: 0.78rem; }
+        footer { text-align: center; font-size: 0.82rem; color: var(--muted); margin-top: 40px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="nav-bar">
-        <a href="#linux-basic">📘 Linux小白入门与基础排障</a>
-        <a href="#kernel-opt">⚡ 网络内核调优(BBR)</a>
-        <a href="#rustdesk">🖥️ 自建RustDesk远程中转</a>
-        <a href="#vps-benchmark">🌐 基础设施选型评测</a>
-    </div>
+    <header>
+        <h1>💻 Avery's Tech Notes</h1>
+        <p>专注于 Linux 系统运维、云原生基础设施部署与跨国网络性能评测的一手实践记录。</p>
+    </header>
 
-    <h1>云主机运维与 DevOps 实战手册</h1>
-    <div class="meta">
-        <span><strong>维护者:</strong> Avery Lau</span>
-        <span><strong>状态:</strong> 持续更新</span>
-        <span class="badge">Linux / Debian / Ubuntu</span>
-        <span class="badge">DevOps 实践</span>
-        <span class="badge">自托管服务</span>
-    </div>
-
-    <p>本文档记录日常在国内外云服务器（VPS）上开展业务部署、容器编排及网络环境调优时的一手实践指南，旨在为开发者提供开箱即用、安全稳定的运维参考。</p>
-
-    <!-- 第一章：Linux入门 -->
-    <h2 id="linux-basic">一、 Linux 快速上手与常用日常排障命令</h2>
-    <p>对于初次接触 Linux 服务器的开发者，熟练掌握以下核心命令可迅速定位 90% 以上的资源与网络异常：</p>
-
-    <h3>1. 系统资源与负载监控</h3>
-    <pre><code># 查看实时 CPU、内存占用与进程树 (建议使用 htop，如无可通过 apt install htop 安装)
-htop
-
-# 查看磁盘空间占用与挂载情况 (-h 表示人类可读单位如 GB/MB)
-df -h
-
-# 查看当前内存及虚拟内存（Swap）使用情况
-free -m</code></pre>
-
-    <h3>2. 网络连接与端口监听排查</h3>
-    <pre><code># 查看当前系统正在监听的 TCP/UDP 端口及对应进程 PID
-ss -tulpn
-
-# 快速检测本机到外部目标主机的延迟与路由追踪
-mtr -rw [目标IP]</code></pre>
-
-    <!-- 第二章：内核调优与BBR -->
-    <h2 id="kernel-opt">二、 底层 TCP 拥塞控制调优（开启 Google BBR）</h2>
-    <p>跨国骨干网络在晚高峰常出现突发丢包。开启 Linux 原生集成的 <strong>BBR</strong> 算法，能在高延迟丢包环境下保证较高的传输吞吐率：</p>
-    <pre><code># 写入内核网络调优参数
-cat >> /etc/sysctl.conf &lt;&lt; EOF
-net.core.default_qdisc = fq
-net.ipv4.tcp_congestion_control = bbr
-EOF
-
-# 使配置立即生效并检验
-sysctl -p
-sysctl net.ipv4.tcp_congestion_control
-# 输出显示 net.ipv4.tcp_congestion_control = bbr 即代表生效</code></pre>
-
-    <!-- 第三章：RustDesk自建中转 -->
-    <h2 id="rustdesk">三、 搭建属于自己的私有 RustDesk 远程桌面中转服务器</h2>
-    <p>TeamViewer、ToDesk 等商业远程软件往往有设备数量限制或网络高峰拥堵。采用开源的 <strong>RustDesk</strong> 自建中转服务器，可以实现端到端加密、高画质且无限制的流畅远程办公。</p>
-
-    <div class="info-card">
-        <strong>💡 服务器网络选型建议：</strong><br>
-        RustDesk 远程控制与画质传输对**丢包率和往返延迟（RTT）**极度敏感。如果中转服务器网络较差，鼠标会出现明显的漂移和卡顿。实测推荐使用三网回程优质直连（如 CN2 GIA / 软银 / 9929）的云主机作为中转节点。
-    </div>
-
-    <h3>1. 使用 Docker Compose 一键启动中转服务（hbbs / hbbr）</h3>
-    <p>在服务器新建 <code>docker-compose.yml</code> 文件：</p>
-    <pre><code>version: '3'
-
-networks:
-  rustdesk-net:
-    external: false
-
-services:
-  hbbs:
-    container_name: rustdesk-hbbs
-    ports:
-      - 21115:21115
-      - 21116:21116
-      - 21116:21116/udp
-      - 21118:21118
-    image: rustdesk/rustdesk-server:latest
-    command: hbbs -r 你的服务器公网IP:21117
-    volumes:
-      - ./data:/root
-    networks:
-      - rustdesk-net
-    restart: unless-stopped
-
-  hbbr:
-    container_name: rustdesk-hbbr
-    ports:
-      - 21117:21117
-      - 21119:21119
-    image: rustdesk/rustdesk-server:latest
-    command: hbbr
-    volumes:
-      - ./data:/root
-    networks:
-      - rustdesk-net
-    restart: unless-stopped</code></pre>
-
-    <h3>2. 启动服务与获取加密公钥 Key</h3>
-    <pre><code># 后台拉起中转容器
-docker compose up -d
-
-# 查看生成的安全验证公钥（Key），客户端配置时需填入
-cat ./data/id_ed25519.pub</code></pre>
-
-    <!-- 第四章：基础设施选型评测 -->
-    <h2 id="vps-benchmark">四、 常用云主机与网络链路选型实测</h2>
-    <p>在进行远程中转、后端 API 交互或企业跨国部署时，机房线路的物理路由决定了最终体验：</p>
-
-    <table>
-        <thead>
-            <tr>
-                <th>线路类型</th>
-                <th>承载骨干网</th>
-                <th>高峰期丢包表现</th>
-                <th>推荐应用场景</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><strong>电信 CN2 GIA (AS4809)</strong></td>
-                <td>中国电信高端政企专网</td>
-                <td>极低 (&lt; 0.5%)</td>
-                <td>核心业务、RustDesk 中转、关键生产服务</td>
-            </tr>
-            <tr>
-                <td><strong>联通 AS9929 / 移动 CMIN2</strong></td>
-                <td>联通A网 / 移动精品网</td>
-                <td>优秀 (&lt; 1%)</td>
-                <td>多运营商混合接入、跨国数据同步</td>
-            </tr>
-            <tr>
-                <td><strong>普通 163 骨干直连</strong></td>
-                <td>民用普通互联链路</td>
-                <td>晚高峰波动大 (10%~20%)</td>
-                <td>离线冷备份、海外本地服务</td>
-            </tr>
-        </tbody>
-    </table>
-
-    <div class="recommend-box">
-        <h3 style="margin-top: 0; color: #0969da;">自用主力测试推荐：BandwagonHost (搬瓦工)</h3>
-        <p>个人多套测试及业务环境目前均托管于 <strong>BandwagonHost（IT7 Networks）</strong> 洛杉矶机房。其优势在于全机房接入了双向 CN2 GIA-E 线路，提供最高 2.5Gbps ~ 10Gbps 的超大带宽端口，即使在晚间 20:00-23:00 网络高峰期，延迟与丢包依旧保持一条直线。支持在线一键自助迁移机房（支持迁移至日本软银、荷兰等节点），非常适合需要高网络稳定性的开发者。</p>
-        <div>
-            <a href="https://bwh81.net/aff.php?aff=82984" target="_blank" rel="noopener" class="btn-link">👉 查看 BandwagonHost 官网方案与最新节点详情</a>
+    <!-- 文章卡片 1 -->
+    <div class="post-card">
+        <h2 class="post-title"><a href="rustdesk.html">🛠️ 基于 Docker 快速搭建私有 RustDesk 远程桌面中转服务器</a></h2>
+        <div class="post-meta">
+            <span>📅 2026-11</span>
+            <span class="tag">Docker</span>
+            <span class="tag">自托管服务</span>
+            <span class="tag">生产环境</span>
         </div>
+        <p class="post-desc">商业远程工具频繁限速和封锁？本文记录如何利用轻量级 VPS 通过 Docker Compose 一键拉起私有 RustDesk 中转服务（hbbs / hbbr），实现超低延迟、端到端加密的安全远程协作方案。</p>
+    </div>
+
+    <!-- 文章卡片 2 -->
+    <div class="post-card">
+        <h2 class="post-title"><a href="vps-review.html">🌐 主流跨国云主机网络线路深度实测与节点选型建议（附CN2 GIA评测）</a></h2>
+        <div class="post-meta">
+            <span>📅 2026-11</span>
+            <span class="tag">网络评测</span>
+            <span class="tag">CN2 GIA</span>
+            <span class="tag">BandwagonHost</span>
+        </div>
+        <p class="post-desc">针对晚高峰跨国网络高丢包痛点，对电信 CN2 GIA、联通 9929、移动 CMIN2 等高端链路进行实机对比测试，并详解搬瓦工（BandwagonHost）洛杉矶及软银机房的综合性价比表现。</p>
+    </div>
+
+    <!-- 文章卡片 3 -->
+    <div class="post-card">
+        <h2 class="post-title"><a href="linux-basics.html">📘 Linux 云服务器生产环境安全加固与基础排障清单</a></h2>
+        <div class="post-meta">
+            <span>📅 2026-10</span>
+            <span class="tag">Linux 运维</span>
+            <span class="tag">安全基线</span>
+            <span class="tag">BBR加速</span>
+        </div>
+        <p class="post-desc">涵盖新服务器交付的第一时间操作规范：SSH 端口变更与防爆破策略、UFW 防火墙配置、BBR 拥塞控制开启以及必备的日常排障命令速查手册。</p>
     </div>
 
     <footer>
-        <p>© Avery's Technical Notes. Built for developer learning and operations benchmarks.</p>
-        <p style="font-size: 0.78rem;">Disclosure: Some infrastructure links on this site contain affiliate tags to support benchmark server running costs without extra cost to you.</p>
+        <p>© 2026 Avery's Tech Blog. Hosted on GitHub Pages.</p>
     </footer>
 </div>
 
