@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Linux VPS 生产环境标准化运维与性能调优实战指南 - Avery's Tech Notes</title>
+    <title>Avery's Tech Notes - 云主机运维与 DevOps 实战手册</title>
     <style>
         :root {
             --primary: #0969da;
@@ -22,38 +22,50 @@
             color: var(--text);
             background-color: var(--bg);
             margin: 0;
-            padding: 40px 15px;
+            padding: 20px 10px;
         }
         .container {
-            max-width: 860px;
+            max-width: 900px;
             margin: 0 auto;
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: 8px;
-            padding: 40px 50px;
+            padding: 30px 40px;
             box-shadow: 0 3px 12px rgba(140,149,159,0.1);
         }
+        /* 导航栏 */
+        .nav-bar {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+            border-bottom: 1px solid var(--border);
+        }
+        .nav-bar a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        .nav-bar a:hover {
+            color: var(--primary);
+        }
         h1 {
-            font-size: 1.9rem;
+            font-size: 1.85rem;
             color: #1f2328;
-            border-bottom: 2px solid var(--border);
-            padding-bottom: 15px;
             margin-top: 0;
         }
         h2 {
             font-size: 1.35rem;
-            margin-top: 36px;
+            margin-top: 40px;
             padding-bottom: 8px;
             border-bottom: 1px solid var(--border);
             color: #1f2328;
         }
         h3 {
             font-size: 1.1rem;
-            margin-top: 24px;
-            color: #24292f;
-        }
-        p, li {
-            font-size: 0.95rem;
+            margin-top: 25px;
             color: #24292f;
         }
         .meta {
@@ -61,7 +73,7 @@
             color: var(--muted);
             margin-bottom: 25px;
             display: flex;
-            gap: 15px;
+            gap: 12px;
             flex-wrap: wrap;
         }
         .badge {
@@ -110,40 +122,40 @@
             background-color: #f6f8fa;
             font-weight: 600;
         }
-        .tip-box {
-            background-color: #f0f8ff;
+        .info-card {
+            background-color: #f6f8fa;
+            border: 1px solid var(--border);
             border-left: 4px solid var(--primary);
-            padding: 15px 20px;
+            padding: 18px 20px;
             margin: 20px 0;
             border-radius: 0 6px 6px 0;
         }
-        .recommend-card {
-            background: linear-gradient(135deg, #f6f8fa 0%, #edf2f7 100%);
-            border: 1px solid #c8e1ff;
+        .recommend-box {
+            background: linear-gradient(135deg, #f0f7ff 0%, #e8f3ff 100%);
+            border: 1px solid #bfdbfe;
             border-radius: 8px;
-            padding: 22px;
-            margin: 30px 0;
+            padding: 20px 24px;
+            margin: 25px 0;
         }
         .btn-link {
             display: inline-block;
             background-color: #2da44e;
             color: #ffffff !important;
-            padding: 9px 18px;
+            padding: 8px 16px;
             border-radius: 6px;
             font-weight: 600;
             text-decoration: none;
             margin-top: 10px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            font-size: 0.9rem;
         }
         .btn-link:hover {
             background-color: #2c974b;
-            text-decoration: none;
         }
         footer {
             margin-top: 50px;
             padding-top: 20px;
             border-top: 1px solid var(--border);
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             color: var(--muted);
             text-align: center;
         }
@@ -152,125 +164,158 @@
 <body>
 
 <div class="container">
-    <h1>Linux VPS 生产环境标准化运维与性能调优实战指南</h1>
-    <div class="meta">
-        <span><strong>作者:</strong> Avery Lau</span>
-        <span><strong>分类:</strong> 系统运维 / 基础设施</span>
-        <span><strong>更新日期:</strong> 2026-11</span>
-        <span class="badge">Linux Kernel 6.x</span>
-        <span class="badge">Debian/Ubuntu</span>
-        <span class="badge">Docker</span>
+    <div class="nav-bar">
+        <a href="#linux-basic">📘 Linux小白入门与基础排障</a>
+        <a href="#kernel-opt">⚡ 网络内核调优(BBR)</a>
+        <a href="#rustdesk">🖥️ 自建RustDesk远程中转</a>
+        <a href="#vps-benchmark">🌐 基础设施选型评测</a>
     </div>
 
-    <p>在跨国网络环境及轻量级云服务器（VPS）的日常运维中，初始系统的合理配置对实例的安全性、跨国吞吐性能和资源利用率起着决定性作用。本文整理了一套开箱即用的生产环境基础配置清单，涵盖底层内核调优、系统安全加固及海外基础设施网络选型实录。</p>
+    <h1>云主机运维与 DevOps 实战手册</h1>
+    <div class="meta">
+        <span><strong>维护者:</strong> Avery Lau</span>
+        <span><strong>状态:</strong> 持续更新</span>
+        <span class="badge">Linux / Debian / Ubuntu</span>
+        <span class="badge">DevOps 实践</span>
+        <span class="badge">自托管服务</span>
+    </div>
 
-    <h2>一、 底层 TCP 网络与拥塞控制算法调优（BBR）</h2>
-    <p>跨国骨干网在高峰时段不可避免存在丢包和抖动。Linux 内核内置的 <strong>Google BBR</strong> 拥塞控制算法能大幅提升弱网/丢包环境下的带宽利用率：</p>
+    <p>本文档记录日常在国内外云服务器（VPS）上开展业务部署、容器编排及网络环境调优时的一手实践指南，旨在为开发者提供开箱即用、安全稳定的运维参考。</p>
 
-    <pre><code># 1. 写入内核 TCP 拥塞控制参数
+    <!-- 第一章：Linux入门 -->
+    <h2 id="linux-basic">一、 Linux 快速上手与常用日常排障命令</h2>
+    <p>对于初次接触 Linux 服务器的开发者，熟练掌握以下核心命令可迅速定位 90% 以上的资源与网络异常：</p>
+
+    <h3>1. 系统资源与负载监控</h3>
+    <pre><code># 查看实时 CPU、内存占用与进程树 (建议使用 htop，如无可通过 apt install htop 安装)
+htop
+
+# 查看磁盘空间占用与挂载情况 (-h 表示人类可读单位如 GB/MB)
+df -h
+
+# 查看当前内存及虚拟内存（Swap）使用情况
+free -m</code></pre>
+
+    <h3>2. 网络连接与端口监听排查</h3>
+    <pre><code># 查看当前系统正在监听的 TCP/UDP 端口及对应进程 PID
+ss -tulpn
+
+# 快速检测本机到外部目标主机的延迟与路由追踪
+mtr -rw [目标IP]</code></pre>
+
+    <!-- 第二章：内核调优与BBR -->
+    <h2 id="kernel-opt">二、 底层 TCP 拥塞控制调优（开启 Google BBR）</h2>
+    <p>跨国骨干网络在晚高峰常出现突发丢包。开启 Linux 原生集成的 <strong>BBR</strong> 算法，能在高延迟丢包环境下保证较高的传输吞吐率：</p>
+    <pre><code># 写入内核网络调优参数
 cat >> /etc/sysctl.conf &lt;&lt; EOF
 net.core.default_qdisc = fq
 net.ipv4.tcp_congestion_control = bbr
-net.ipv4.tcp_fastopen = 3
-net.ipv4.tcp_rmem = 4096 87380 67108864
-net.ipv4.tcp_wmem = 4096 65536 67108864
 EOF
 
-# 2. 使配置立即生效
+# 使配置立即生效并检验
 sysctl -p
+sysctl net.ipv4.tcp_congestion_control
+# 输出显示 net.ipv4.tcp_congestion_control = bbr 即代表生效</code></pre>
 
-# 3. 校验 BBR 模块激活状态 (输出应包含 bbr)
-sysctl net.ipv4.tcp_congestion_control</code></pre>
+    <!-- 第三章：RustDesk自建中转 -->
+    <h2 id="rustdesk">三、 搭建属于自己的私有 RustDesk 远程桌面中转服务器</h2>
+    <p>TeamViewer、ToDesk 等商业远程软件往往有设备数量限制或网络高峰拥堵。采用开源的 <strong>RustDesk</strong> 自建中转服务器，可以实现端到端加密、高画质且无限制的流畅远程办公。</p>
 
-    <h2>二、 服务器安全基线与 SSH 访问控制</h2>
-    <p>公网开放的服务器极易受到 22 端口暴力破解扫描。建议在实例交付的第一时间完成端口替换及仅允许公钥登录：</p>
+    <div class="info-card">
+        <strong>💡 服务器网络选型建议：</strong><br>
+        RustDesk 远程控制与画质传输对**丢包率和往返延迟（RTT）**极度敏感。如果中转服务器网络较差，鼠标会出现明显的漂移和卡顿。实测推荐使用三网回程优质直连（如 CN2 GIA / 软银 / 9929）的云主机作为中转节点。
+    </div>
 
-    <pre><code># 调整 SSH 安全配置
-sed -i 's/#Port 22/Port 2222/' /etc/ssh/sshd_config
-sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
-sed -i 's/PermitRootLogin yes/PermitRootLogin prohibit-password/' /etc/ssh/sshd_config
+    <h3>1. 使用 Docker Compose 一键启动中转服务（hbbs / hbbr）</h3>
+    <p>在服务器新建 <code>docker-compose.yml</code> 文件：</p>
+    <pre><code>version: '3'
 
-# 配置 UFW 防火墙基础放行规则
-ufw default deny incoming
-ufw default allow outgoing
-ufw allow 2222/tcp comment 'Custom SSH'
-ufw allow 80/tcp comment 'HTTP'
-ufw allow 443/tcp comment 'HTTPS'
-ufw enable
+networks:
+  rustdesk-net:
+    external: false
 
-# 重载 SSHD 守护进程
-systemctl restart sshd</code></pre>
+services:
+  hbbs:
+    container_name: rustdesk-hbbs
+    ports:
+      - 21115:21115
+      - 21116:21116
+      - 21116:21116/udp
+      - 21118:21118
+    image: rustdesk/rustdesk-server:latest
+    command: hbbs -r 你的服务器公网IP:21117
+    volumes:
+      - ./data:/root
+    networks:
+      - rustdesk-net
+    restart: unless-stopped
 
-    <h2>三、 轻量级虚拟内存交换区（Swap）配置</h2>
-    <p>对于 1GB - 2GB 内存的云主机，配置 2GB 的应急 Swap 空间能够极大避免 MySQL 等重度进程因内存突发消耗导致 OOM（Out of Memory）进程被系统强杀：</p>
+  hbbr:
+    container_name: rustdesk-hbbr
+    ports:
+      - 21117:21117
+      - 21119:21119
+    image: rustdesk/rustdesk-server:latest
+    command: hbbr
+    volumes:
+      - ./data:/root
+    networks:
+      - rustdesk-net
+    restart: unless-stopped</code></pre>
 
-    <pre><code># 创建并启用 2GB 交换分区
-fallocate -l 2G /swapfile
-chmod 600 /swapfile
-mkswap /swapfile
-swapon /swapfile
+    <h3>2. 启动服务与获取加密公钥 Key</h3>
+    <pre><code># 后台拉起中转容器
+docker compose up -d
 
-# 持久化挂载
-echo '/swapfile none swap sw 0 0' >> /etc/fstab
+# 查看生成的安全验证公钥（Key），客户端配置时需填入
+cat ./data/id_ed25519.pub</code></pre>
 
-# 设置合理的 swappiness (建议 10~20，降低磁盘频繁读写)
-echo 'vm.swappiness = 15' >> /etc/sysctl.conf && sysctl -p</code></pre>
-
-    <h2>四、 常用云服务商与骨干网络选型评测</h2>
-    <p>针对跨国测试及亚太/中国大陆方向的访问业务，服务器所在机房的出口链路（Transit Carrier）对延迟与丢包有决定性影响：</p>
+    <!-- 第四章：基础设施选型评测 -->
+    <h2 id="vps-benchmark">四、 常用云主机与网络链路选型实测</h2>
+    <p>在进行远程中转、后端 API 交互或企业跨国部署时，机房线路的物理路由决定了最终体验：</p>
 
     <table>
         <thead>
             <tr>
-                <th>网络线路类型</th>
-                <th>承载运营商</th>
-                <th>高峰期丢包率</th>
-                <th>适用业务场景</th>
+                <th>线路类型</th>
+                <th>承载骨干网</th>
+                <th>高峰期丢包表现</th>
+                <th>推荐应用场景</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td><strong>CN2 GIA (AS4809)</strong></td>
-                <td>中国电信高端专网</td>
-                <td>&lt; 0.5% (极低)</td>
-                <td>核心企业业务、低延迟生产后端</td>
+                <td><strong>电信 CN2 GIA (AS4809)</strong></td>
+                <td>中国电信高端政企专网</td>
+                <td>极低 (&lt; 0.5%)</td>
+                <td>核心业务、RustDesk 中转、关键生产服务</td>
             </tr>
             <tr>
-                <td><strong>AS9929 / CMIN2</strong></td>
-                <td>联通A网 / 移动高端</td>
-                <td>&lt; 1.0% (优秀)</td>
-                <td>三网综合加速、海外同步服务</td>
+                <td><strong>联通 AS9929 / 移动 CMIN2</strong></td>
+                <td>联通A网 / 移动精品网</td>
+                <td>优秀 (&lt; 1%)</td>
+                <td>多运营商混合接入、跨国数据同步</td>
             </tr>
             <tr>
-                <td><strong>普通 163 骨干网</strong></td>
-                <td>传统跨国直连</td>
-                <td>10% ~ 25% (晚高峰拥堵)</td>
-                <td>大带宽离线存储、本地备份节点</td>
+                <td><strong>普通 163 骨干直连</strong></td>
+                <td>民用普通互联链路</td>
+                <td>晚高峰波动大 (10%~20%)</td>
+                <td>离线冷备份、海外本地服务</td>
             </tr>
         </tbody>
     </table>
 
-    <div class="recommend-card">
-        <h3 style="margin-top: 0; color: #0969da;">自用基础设施推荐：BandwagonHost (搬瓦工)</h3>
-        <p>在多年跨国服务器运维实测中，<strong>BandwagonHost（IT7 Networks）</strong> 提供的洛杉矶 CN2 GIA（DC6 / DC9 机房）、日本软银（Softbank）及香港/东京机房在晚间骨干网高峰期的 SLA 表现极为出色。其硬件平台基于企业级 KVM 架构，自带控制面板可一键切换机房机位，网络路由非常干净稳定。</p>
-        <p><strong>推荐主力配置：</strong> 洛杉矶 CN2 GIA-E 方案（支持高达 2.5Gbps ~ 10Gbps 企业级带宽），兼顾电信、联通与移动三网直连路由。</p>
+    <div class="recommend-box">
+        <h3 style="margin-top: 0; color: #0969da;">自用主力测试推荐：BandwagonHost (搬瓦工)</h3>
+        <p>个人多套测试及业务环境目前均托管于 <strong>BandwagonHost（IT7 Networks）</strong> 洛杉矶机房。其优势在于全机房接入了双向 CN2 GIA-E 线路，提供最高 2.5Gbps ~ 10Gbps 的超大带宽端口，即使在晚间 20:00-23:00 网络高峰期，延迟与丢包依旧保持一条直线。支持在线一键自助迁移机房（支持迁移至日本软银、荷兰等节点），非常适合需要高网络稳定性的开发者。</p>
         <div>
-            <a href="https://bwh81.net/aff.php?aff=82984" target="_blank" rel="noopener" class="btn-link">👉 访问 BandwagonHost 官网方案详情</a>
+            <a href="https://bwh81.net/aff.php?aff=82984" target="_blank" rel="noopener" class="btn-link">👉 查看 BandwagonHost 官网方案与最新节点详情</a>
         </div>
     </div>
 
-    <h2>五、 容器化基础设施快速部署（Docker & Compose）</h2>
-    <pre><code># 自动化安装最新稳定版 Docker Engine
-curl -fsSL https://get.docker.com | bash
-
-# 开启服务自启动
-systemctl enable --now docker
-
-# 检查运行状态与版本
-docker version && docker compose version</code></pre>
-
     <footer>
-        <p>© Avery's Technical Archive. Published on GitHub Pages. Dedicated to systems administration, networking benchmarks, and cloud infrastructure practices.</p>
+        <p>© Avery's Technical Notes. Built for developer learning and operations benchmarks.</p>
+        <p style="font-size: 0.78rem;">Disclosure: Some infrastructure links on this site contain affiliate tags to support benchmark server running costs without extra cost to you.</p>
     </footer>
 </div>
 
