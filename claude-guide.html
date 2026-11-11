@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>从防封登录到终端编程：Claude 高阶实战、Claude Code 与 MCP 架构指南 - Avery's Tech Notes</title>
+    <style>
+        :root { --primary: #0969da; --bg: #f6f8fa; --card: #ffffff; --text: #24292f; --border: #d0d7de; --code-bg: #f6f8fa; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; margin: 0; padding: 30px 15px; }
+        .container { max-width: 860px; margin: 0 auto; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 40px; }
+        .back-link { display: inline-block; margin-bottom: 20px; color: var(--primary); text-decoration: none; font-size: 0.95rem; font-weight: 500; }
+        h1 { font-size: 1.8rem; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-top: 0; }
+        h2 { font-size: 1.35rem; margin-top: 35px; border-bottom: 1px solid var(--border); padding-bottom: 8px; color: #1f2328; }
+        h3 { font-size: 1.1rem; margin-top: 25px; color: #24292f; }
+        pre { background: #24292e; color: #f6f8fa; padding: 16px; border-radius: 6px; overflow-x: auto; font-size: 0.9rem; line-height: 1.5; }
+        code { background: var(--code-bg); color: #cf222e; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.9rem; border: 1px solid #e1e4e8; }
+        pre code { background: transparent; color: inherit; border: none; padding: 0; }
+        .tip { background: #ddf4ff; border-left: 4px solid var(--primary); padding: 15px; margin: 20px 0; border-radius: 0 6px 6px 0; }
+        .warn { background: #fff8c5; border-left: 4px solid #9a6700; padding: 15px; margin: 20px 0; border-radius: 0 6px 6px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.92rem; }
+        th, td { border: 1px solid var(--border); padding: 10px 14px; text-align: left; }
+        th { background: #f6f8fa; font-weight: 600; }
+        ol li, ul li { margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <a href="index.html" class="back-link">← 返回博客首页</a>
+    <h1>从防封登录到终端编程：Claude 高阶实战、Claude Code 与 MCP 架构指南</h1>
+    <p><em>作者: Avery | 分类: AI 工程化与效能 | 最后更新: 2026-11</em></p>
+
+    <div class="tip">
+        <strong>核心导读：</strong> 相比于其他大语言模型，Anthropic 推出的 Claude 系列在长上下文理解、复杂工程代码重构上表现极强。然而国内开发者使用 Claude 常面临两大壁垒：一是严苛的风控封号机制，二是如何脱离单纯的网页聊天、将其深度嵌入真实开发工作流。本文系统梳理从底层防封认证到终端 Agent（Claude Code）及模型上下文协议（MCP）的完整落地指南。
+    </div>
+
+    <h2>一、 账号风控机理与 SessionKey 免密安全登录</h2>
+    <p>Anthropic 拥有一套极其严密的实时风控模型，很多新账号被封通常并非因为提问内容，而是触发了<strong>登录环境指纹异常</strong>：</p>
+    <ul>
+        <li><strong>高危行为：</strong> 使用万人共用的公共代理节点、在同一会话中频繁在不同国家 IP 间跳跃、短时间内反复索取邮箱验证码。</li>
+        <li><strong>风控机制：</strong> 网页登录表单在提交验证码时会触发高强度环境检查（包括 WebGL 指纹、时区与 WebRTC IP 泄漏检查）。</li>
+    </ul>
+
+    <h3>突破方案：使用 SessionKey 走 Cookie 注入登录</h3>
+    <p>SessionKey（形如 <code>sk-ant-sid01-...</code>）是官方用于维持用户会话的合法身份令牌：</p>
+    <ol>
+        <li>在浏览器安装官方商店认证的 Cookie 管理扩展（如 <strong>Cookie-Editor</strong>）。</li>
+        <li>打开 Claude 官网登录页（<code>claude.ai</code>），点击插件图标。</li>
+        <li>新增或替换 Cookie 项：
+            <ul>
+                <li><strong>Name：</strong> <code>sessionKey</code></li>
+                <li><strong>Value：</strong> 粘贴你的 <code>sk-ant-sid01-xxxx</code> 字符串</li>
+                <li><strong>Domain：</strong> <code>.claude.ai</code></li>
+            </ul>
+        </li>
+        <li>刷新页面，即可直接以登录状态进入控制台，<strong>全程不经过邮箱验证码环节</strong>，大幅降低风控拦截概率，且支持多账号平滑切换。</li>
+    </ol>
+
+    <h2>二、 网页版 Token 消耗机理与省额度技巧</h2>
+    <p>许多开发者反馈“没问几句就提示额度用尽”，这与大模型的上下文计算机制密切相关：</p>
+    <div class="warn">
+        <strong>⚠️ 计费避坑：</strong> 大模型的单次推理消耗，包含<strong>本次输入 + 历次所有上下文历史</strong>。当你在一个长对话里聊了 30 轮后，即使你只回了一个“对”，系统也会将前 29 轮几十万字的内容打包重新计费！
+    </div>
+    <ul>
+        <li><strong>及时开新会话：</strong> 完成一个独立的 Bug 排查或功能模块后，主动新开 Chat，避免历史对话雪球式膨胀。</li>
+        <li><strong>善用 Project（项目知识库）：</strong> 将项目的核心架构文档、接口定义上传到 Project Knowledge，只需上传一次即可全局复用，避免每次提问重复粘贴大段背景代码。</li>
+    </ul>
+
+    <h2>三、 终端生产力跃迁：Claude Code 安装与实战</h2>
+    <p><strong>Claude Code</strong> 是 Anthropic 官方推出的 Agentic 命令行编程工具。它不仅能回答问题，更能直接在本地终端中<strong>读取工程目录、搜索跨文件依赖、自动执行测试命令并提交 Git 变更</strong>。</p>
+
+    <h3>1. 全局安装与授权</h3>
+    <pre><code># 依赖 Node.js (推荐 v18 及以上)
+npm install -g @anthropic-ai/claude-code
+
+# 进入你的工程根目录启动
+cd /path/to/your/project
+claude</code></pre>
+
+    <p>初次启动时，终端会给出一个授权链接，只需在已登录 Claude 的浏览器中点击授权确认，终端即可自动捕获凭据完成绑定。</p>
+
+    <h3>2. 核心高效交互指令</h3>
+    <pre><code># 场景 1：全项目代码审查与架构理解
+> "分析当前仓库的认证模块，并找出潜在的并发安全隐患"
+
+# 场景 2：端到端排障与自动修复
+> "运行 npm test，分析失败的测试用例并直接修复对应文件"
+
+# 场景 3：直接生成并提交 Git 记录
+> "整理刚刚修改的所有改动，编写符合规范的 commit message 并准备提交"</code></pre>
+
+    <h2>四、 打通外部系统：MCP（模型上下文协议）实操</h2>
+    <p><strong>Model Context Protocol（MCP）</strong> 是 Anthropic 开源的标准协议，它允许 AI 客户端通过统一接口安全调用外部本地工具和数据源。</p>
+
+    <h3>配置本地 MCP 扩展服务</h3>
+    <p>在 Claude Desktop 或 Claude Code 的配置文件（<code>claude_desktop_config.json</code>）中，可以轻松挂载各类本地服务：</p>
+
+    <pre><code>{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/Users/avery/workspace"]
+    },
+    "sqlite": {
+      "command": "uvx",
+      "args": ["mcp-server-sqlite", "--db-path", "/data/app.db"]
+    }
+  }
+}</code></pre>
+
+    <p>配置完成后，Claude 即可直接执行安全隔离的 SQL 查询、分析本地文件内容，彻底成为能够解决复杂企业实际任务的超级数字助手。</p>
+
+    <p style="margin-top: 40px;"><a href="index.html" class="back-link">← 返回博客首页</a></p>
+</div>
+
+</body>
+</html>
